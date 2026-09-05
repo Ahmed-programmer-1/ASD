@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>إدارة المكتبة</title><link rel="stylesheet" href="style.css">
+<style>
+body{font-family:var(--font-body)}
+.admin{max-width:1000px;margin:auto;padding:25px 15px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l);padding:22px;margin-bottom:18px}
+h1,h2{font-family:var(--font-display)}
+label{display:block;font-weight:600;margin:14px 0 7px;font-size:14px}
+input,textarea,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--bg);color:var(--text);font:inherit}
+textarea{min-height:85px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.btn{border:1px solid transparent;border-radius:var(--radius-s);padding:11px 18px;cursor:pointer;margin-top:12px;font-weight:600}
+.primary{background:var(--primary);color:var(--primary-ink)}
+.soft{background:var(--soft);color:var(--text);border-color:var(--line)}
+.danger{background:transparent;color:var(--danger);border-color:var(--danger)}
+.hint{color:var(--muted);font-size:13px;line-height:1.7}
+.msg{margin-top:13px;padding:12px;border-radius:var(--radius-s);background:var(--soft);border:1px solid var(--line)}
+.login{max-width:520px;margin:70px auto}
+.site-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:13px 0}
+.site-row:last-child{border:0}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.actions .btn{margin-top:0;padding:8px 12px;font-size:13px}
+.check{display:flex;gap:9px;align-items:center;margin-top:13px}
+.check input{width:auto}
+.stats-panel{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.stat-chip{background:var(--soft);border:1px solid var(--line);border-radius:var(--radius-s);padding:10px 18px;text-align:center;min-width:90px}
+.stat-chip b{display:block;font-size:20px;font-family:var(--font-display)}
+.stat-chip span{font-size:12px;color:var(--muted)}
+.stats-panel .btn{margin-top:0;margin-inline-start:auto}
+.steps-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 0}
+.step-tab{border:0;background:none;color:var(--muted);padding:10px 4px;margin-inline-end:22px;border-bottom:2px solid transparent;font-weight:500;cursor:pointer;font-size:14.5px}
+.step-tab.active{color:var(--text);border-bottom-color:var(--primary);font-weight:600}
+.step-panel{padding-top:16px}
+.inline-add{display:flex;gap:6px}
+.inline-add select{flex:1}
+.inline-add .btn{margin-top:0;padding:11px 16px}
+.drop-zone{border:2px dashed var(--line);border-radius:var(--radius-m);padding:22px;text-align:center;color:var(--muted)}
+.drop-zone.drag{border-color:var(--primary);background:var(--soft);color:var(--text)}
+.drop-zone .btn{margin-top:10px}
+.section-row{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--soft);border-radius:var(--radius-s);margin:6px 0}
+.section-row input{flex:1;background:var(--bg);padding:8px 10px}
+.section-row .count{color:var(--muted);font-size:12px;white-space:nowrap}
+.section-row .btn{margin-top:0;padding:7px 10px;font-size:12px}
+.part-upload{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;margin:6px 0;padding:9px 12px;background:var(--soft);border-radius:var(--radius-s)}
+.order-num{color:var(--muted);font-weight:600;text-align:center;font-size:13px}
+.part-title-input{border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:13.5px;width:100%;background:var(--bg);margin-bottom:4px}
+.file-actions{display:flex;gap:4px}
+.file-actions button{margin:0;padding:6px 9px;font-size:12px}
+.files-list{max-height:380px;overflow:auto;padding-inline-end:4px}
+@media(max-width:650px){.row{grid-template-columns:1fr}.part-upload{grid-template-columns:22px 1fr}.file-actions{grid-column:1/-1;justify-content:flex-end;margin-top:4px}.stats-panel .btn{margin-inline-start:0;width:100%}}
+</style></head>
+<body>
+<div class="admin">
+<section id="login" class="panel login">
+<h1>🔐 إدارة المكتبة</h1><p class="hint">صفحة مخفية للإدارة. يتم الاتصال مباشرة بـ GitHub باستخدام صلاحية Contents. لا يتم وضع الـToken في ملفات المشروع.</p>
+<label>GitHub Token</label><input id="token" type="password" autocomplete="off" placeholder="github_pat_...">
+<button class="btn primary" id="loginBtn">دخول</button>
+</section>
+
+<div id="app" class="hidden">
+<section class="panel">
+<h1>⚙️ إعدادات GitHub</h1>
+<div class="row"><div><label>Owner</label><input id="owner" placeholder="ahmed-programmer-1"></div><div><label>Repository</label><input id="repo" placeholder="rdry"></div></div>
+<label>Branch</label><input id="branch" value="main">
+<button class="btn primary" id="saveSettings">اختبار الاتصال وحفظ</button>
+<button class="btn soft" id="logout">تسجيل الخروج</button>
+</section>
+
+<section class="panel stats-panel">
+<div class="stat-chip"><b id="statCoursesA">0</b><span>كورس</span></div>
+<div class="stat-chip"><b id="statSectionsA">0</b><span>قسم</span></div>
+<div class="stat-chip"><b id="statPartsA">0</b><span>صفحة</span></div>
+<button class="btn soft" id="exportBtn">⬇️ نسخة احتياطية (JSON)</button>
+</section>
+
+<section class="panel">
+<h2>🗂️ الأقسام</h2>
+<p class="hint">أنشئ قسمًا لكل موضوع (زي: انجليزي، جافاسكريبت، تاريخ...) وضيف الدروس جواه، عشان المستخدم يلاقي كل حاجة مرتبة بدل ما تكون كل الدروس مبعثرة في قائمة واحدة. نفس ترتيب الأقسام هنا هيظهر للمستخدم في الصفحة الرئيسية.</p>
+<div class="row"><input id="newSectionName" placeholder="اسم القسم الجديد"><button class="btn primary" id="addSectionBtn" style="margin-top:0">+ إضافة قسم</button></div>
+<div id="sectionsList" class="files-list" style="margin-top:14px"></div>
+</section>
+
+<section class="panel">
+<h2 id="formTitle">➕ إضافة محتوى</h2>
+<div class="steps-tabs">
+  <button type="button" class="step-tab active" data-step="1">1. البيانات الأساسية</button>
+  <button type="button" class="step-tab" data-step="2">2. الأجزاء (الصفحات)</button>
+</div>
+
+<div class="step-panel" data-step="1">
+<div class="row">
+  <div><label>اسم الدرس / الكورس</label><input id="name" placeholder="JavaScript للمبتدئين"></div>
+  <div><label>القسم</label><div class="inline-add"><select id="category"></select><button type="button" class="btn soft" id="quickAddSection">+</button></div></div>
+</div>
+<label>الوصف</label><textarea id="description" placeholder="وصف يظهر على الكرت"></textarea>
+<div class="row"><div><label>المستوى</label><select id="level"><option value="">بدون تحديد</option><option>مبتدئ</option><option>متوسط</option><option>متقدم</option></select></div><div><label>المدة</label><input id="duration" placeholder="120 دقيقة"></div></div>
+<label>الوسوم</label><input id="tags" placeholder="javascript, frontend, beginner">
+<label>صورة الكرت (اختياري)</label><input id="image" type="file" accept="image/*">
+<label class="check"><input id="featured" type="checkbox"> ⭐ اجعل هذا المحتوى مميزًا</label>
+</div>
+
+<div class="step-panel hidden" data-step="2">
+<p class="hint">أضف صفحة HTML واحدة في كل مرة بزر "أضف صفحة"، أو اسحب عدة ملفات دفعة واحدة. الاسم يُشتق من اسم الملف تلقائيًا وتقدر تعدّله. لو الكورس صفحة واحدة بس، أضف صفحة واحدة وخلاص.</p>
+<div id="dropZone" class="drop-zone">
+  <span>اسحب ملفات HTML هنا</span><br>
+  <label class="btn primary">+ أضف صفحة HTML<input id="partFile" type="file" accept=".html,.htm,text/html" multiple hidden></label>
+</div>
+<div id="partsBuilder" class="files-list" style="margin-top:12px"></div>
+</div>
+
+<button class="btn primary" id="submit">رفع إلى GitHub</button>
+<button class="btn soft" id="duplicateBtn" style="display:none">⧉ استنساخ كمحتوى جديد</button>
+<button class="btn soft hidden" id="cancel">إلغاء التعديل</button>
+<div id="msg" class="msg hidden"></div>
+</section>
+
+<section class="panel">
+<h2>📚 المحتوى الحالي</h2>
+<input id="listSearch" placeholder="ابحث في المحتوى الحالي...">
+<div id="list" style="margin-top:12px">جاري التحميل...</div>
+</section>
+</div>
+</div>
+
+<script>
+const API="https://api.github.com";
+let token=sessionStorage.getItem("libraryToken")||"", sites=[], sections=[], editing=-1, pendingParts=[], dirty=false;
+const $=x=>document.getElementById(x);
+function cfg(){return{owner:$("owner").value.trim(),repo:$("repo").value.trim(),branch:$("branch").value.trim()||"main"}}
+function headers(){return{"Accept":"application/vnd.github+json","Authorization":"Bearer "+token,"X-GitHub-Api-Version":"2022-11-28","Content-Type":"application/json"}}
+function msg(t,err=false){$("msg").textContent=t;$("msg").style.background=err?"#fef3f2":"var(--soft)";$("msg").style.color=err?"#b42318":"var(--text)";$("msg").classList.remove("hidden")}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function slug(v){return (v.normalize("NFKD").replace(/[^\u0600-\u06FF\w\s-]/g,"").trim().replace(/\s+/g,"-").replace(/-+/g,"-")||"content")+"-"+Math.random().toString(36).slice(2,7)}
+function b64(t){const a=new TextEncoder().encode(t);let s="";for(let i=0;i<a.length;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(s)}
+function f64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=rej;r.readAsDataURL(f)})}
+function naturalCompare(a,b){const ax=[],bx=[];a.replace(/(\d+)|(\D+)/g,(_,d,s)=>{ax.push([d?parseInt(d,10):Infinity,s||""])});b.replace(/(\d+)|(\D+)/g,(_,d,s)=>{bx.push([d?parseInt(d,10):Infinity,s||""])});while(ax.length&&bx.length){const an=ax.shift(),bn=bx.shift();const nn=(an[0]-bn[0])||an[1].localeCompare(bn[1]);if(nn)return nn}return ax.length-bx.length}
+async function runWithConcurrency(items,limit,worker){let idx=0;async function pull(){const i=idx++;if(i>=items.length)return;await worker(items[i],i);return pull()}await Promise.all(Array.from({length:Math.min(limit,items.length)},pull))}
+
+async function apiError(r){let text="";try{text=await r.text()}catch{}let m=text;try{const j=JSON.parse(text);m=j.message||text}catch{}
+ if(r.status===401)return Error("Token غير صالح أو منتهي. تأكد من نسخ Token صحيح.");
+ if(r.status===403)return Error("لا تملك صلاحية كافية (تأكد أن Token يملك Contents: Read and write).");
+ if(r.status===404)return Error("لم يتم العثور على المستودع. تأكد من Owner وRepository وأن Token يملك صلاحية الوصول له.");
+ if(r.status===409||r.status===422)return Error("تعارض في البيانات (قد يكون الملف تغيّر في GitHub). أعد المحاولة بعد تحديث الصفحة.");
+ return Error(m||("خطأ من GitHub: "+r.status))}
+async function get(path){const c=cfg(),url=`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/contents/${path.split("/").map(encodeURIComponent).join("/")}?ref=${encodeURIComponent(c.branch)}`;const r=await fetch(url,{headers:headers()});if(r.status===404)return null;if(!r.ok)throw await apiError(r);return r.json()}
+
+/* ---- Git Data API: build the whole save as ONE atomic commit ---- */
+async function getRef(){const c=cfg();const r=await fetch(`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/git/ref/heads/${encodeURIComponent(c.branch)}`,{headers:headers()});if(!r.ok)throw await apiError(r);return (await r.json()).object.sha}
+async function getCommit(sha){const c=cfg();const r=await fetch(`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/git/commits/${sha}`,{headers:headers()});if(!r.ok)throw await apiError(r);return r.json()}
+async function createBlob(base64){const c=cfg();const r=await fetch(`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/git/blobs`,{method:"POST",headers:headers(),body:JSON.stringify({content:base64,encoding:"base64"})});if(!r.ok)throw await apiError(r);return (await r.json()).sha}
+async function createTree(baseTree,entries){const c=cfg();const r=await fetch(`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/git/trees`,{method:"POST",headers:headers(),body:JSON.stringify({base_tree:baseTree,tree:entries})});if(!r.ok)throw await apiError(r);return (await r.json()).sha}
+async function createCommit(message,tree,parent){const c=cfg();const r=await fetch(`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/git/commits`,{method:"POST",headers:headers(),body:JSON.stringify({message,tree,parents:[parent]})});if(!r.ok)throw await apiError(r);return (await r.json()).sha}
+async function updateRef(sha){const c=cfg();const r=await fetch(`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/git/refs/heads/${encodeURIComponent(c.branch)}`,{method:"PATCH",headers:headers(),body:JSON.stringify({sha,force:false})});if(!r.ok)throw await apiError(r)}
+async function commitChanges(entries,message){const parentSha=await getRef();const parentCommit=await getCommit(parentSha);const treeSha=await createTree(parentCommit.tree.sha,entries);const commitSha=await createCommit(message,treeSha,parentSha);await updateRef(commitSha)}
+
+function sitesJsonContent(){return JSON.stringify({sections,courses:sites},null,2)+"\n"}
+async function loadJson(){
+  const x=await get("sites.json");if(!x){sites=[];sections=[];return null}
+  const bytes=Uint8Array.from(atob(x.content.replace(/\n/g,"")),c=>c.charCodeAt(0));
+  const data=JSON.parse(new TextDecoder().decode(bytes));
+  if(Array.isArray(data)){sites=data;sections=[]}else{sites=data.courses||data.sites||[];sections=data.sections||[]}
+  if(!sections.length&&sites.length){const cats=[...new Set(sites.map(s=>s.category).filter(Boolean))];sections=cats.map(name=>({id:slug(name),name}))}
+  return x;
+}
+
+/* ---- Sections ---- */
+function sectionCourseCount(name){return sites.filter(s=>s.category===name).length}
+function renderCategorySelect(){
+  const sel=$("category");const current=sel.value;
+  sel.innerHTML='<option value="">بدون قسم</option>'+sections.map(s=>`<option value="${esc(s.name)}">${esc(s.name)}</option>`).join("");
+  if([...sel.options].some(o=>o.value===current))sel.value=current;
+}
+function renderSections(){
+  const box=$("sectionsList");
+  box.innerHTML=sections.length?sections.map((sec,i)=>`
+    <div class="section-row" data-i="${i}">
+      <input class="sec-name" data-i="${i}" value="${esc(sec.name)}">
+      <span class="count">${sectionCourseCount(sec.name)} كورس</span>
+      <button type="button" class="btn soft move-sec-up" data-i="${i}" ${i===0?"disabled":""}>▲</button>
+      <button type="button" class="btn soft move-sec-down" data-i="${i}" ${i===sections.length-1?"disabled":""}>▼</button>
+      <button type="button" class="btn danger del-section" data-i="${i}">حذف</button>
+    </div>`).join(""):'<p class="hint">لا توجد أقسام بعد. أضف أول قسم فوق.</p>';
+  box.querySelectorAll(".sec-name").forEach(inp=>inp.addEventListener("change",()=>renameSection(+inp.dataset.i,inp.value.trim())));
+  box.querySelectorAll(".move-sec-up").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;[sections[i-1],sections[i]]=[sections[i],sections[i-1]];saveSectionsOnly("Reorder sections")});
+  box.querySelectorAll(".move-sec-down").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;[sections[i+1],sections[i]]=[sections[i],sections[i+1]];saveSectionsOnly("Reorder sections")});
+  box.querySelectorAll(".del-section").forEach(b=>b.onclick=()=>deleteSection(+b.dataset.i));
+  renderCategorySelect();renderStatsA();
+}
+async function saveSectionsOnly(message){
+  try{msg("جاري حفظ الأقسام...");await commitChanges([{path:"sites.json",mode:"100644",type:"blob",content:sitesJsonContent()}],message);renderSections();renderList();msg("تم الحفظ.")}
+  catch(e){msg("فشل حفظ الأقسام: "+e.message,true)}
+}
+function renameSection(i,newName){
+  if(!newName){renderSections();return}
+  const old=sections[i].name;if(old===newName)return;
+  if(sections.some((s,j)=>j!==i&&s.name===newName)){msg("يوجد قسم بنفس الاسم بالفعل.",true);renderSections();return}
+  sections[i].name=newName;sites.forEach(s=>{if(s.category===old)s.category=newName});
+  saveSectionsOnly(`Rename section ${old} -> ${newName}`);
+}
+function deleteSection(i){
+  const sec=sections[i];const count=sectionCourseCount(sec.name);
+  if(count>0&&!confirm(`القسم "${sec.name}" مستخدم في ${count} كورس. حذفه هيخلي هذا المحتوى بدون قسم. متأكد؟`))return;
+  sections.splice(i,1);sites.forEach(s=>{if(s.category===sec.name)s.category=""});
+  saveSectionsOnly(`Delete section ${sec.name}`);
+}
+$("addSectionBtn").onclick=()=>{
+  const name=$("newSectionName").value.trim();if(!name)return;
+  if(sections.some(s=>s.name===name)){msg("القسم موجود بالفعل.",true);return}
+  sections.push({id:slug(name),name});$("newSectionName").value="";
+  saveSectionsOnly(`Add section ${name}`);
+};
+$("quickAddSection").onclick=()=>{
+  const name=prompt("اسم القسم الجديد:");if(!name||!name.trim())return;const clean=name.trim();
+  if(!sections.some(s=>s.name===clean))sections.push({id:slug(clean),name:clean});
+  renderCategorySelect();$("category").value=clean;markDirty();
+  saveSectionsOnly(`Add section ${clean}`);
+};
+
+/* ---- Parts builder (add one page at a time, or drag several) ---- */
+function uid(){return "p"+Date.now()+Math.random().toString(36).slice(2,6)}
+function cleanTitle(name){return name.replace(/\.html?$/i,"").replace(/[-_]+/g," ").trim()}
+function addFilesToPending(fileList){
+  const arr=[...fileList].filter(f=>/\.html?$/i.test(f.name));
+  const bad=[...fileList].filter(f=>!/\.html?$/i.test(f.name));
+  if(bad.length)msg(`تم تجاهل ${bad.length} ملف غير HTML.`,true);
+  arr.sort((a,b)=>naturalCompare(a.name,b.name));
+  arr.forEach(f=>pendingParts.push({id:uid(),title:cleanTitle(f.name),file:f,path:null}));
+  renderPartsBuilder();
+}
+$("partFile").addEventListener("change",()=>{addFilesToPending($("partFile").files);$("partFile").value=""});
+const dz=$("dropZone");
+dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("drag")});
+dz.addEventListener("dragleave",()=>dz.classList.remove("drag"));
+dz.addEventListener("drop",e=>{e.preventDefault();dz.classList.remove("drag");if(e.dataTransfer.files.length)addFilesToPending(e.dataTransfer.files)});
+function renderPartsBuilder(){
+  const box=$("partsBuilder");
+  if(!pendingParts.length){box.innerHTML='<p class="hint">لا توجد صفحات بعد. أضف أول صفحة فوق.</p>';markDirty();return}
+  box.innerHTML=pendingParts.map((p,i)=>`
+    <div class="part-upload" data-id="${p.id}">
+      <span class="order-num">${i+1}</span>
+      <div><input class="part-title-input" data-id="${p.id}" value="${esc(p.title)}" placeholder="اسم الصفحة"><small class="hint">${p.file?esc(p.file.name):"ملف محفوظ على GitHub"}</small></div>
+      <div class="file-actions">
+        <button type="button" class="btn soft preview-part" data-id="${p.id}">معاينة</button>
+        <button type="button" class="btn soft move-part-up" data-id="${p.id}" ${i===0?"disabled":""}>▲</button>
+        <button type="button" class="btn soft move-part-down" data-id="${p.id}" ${i===pendingParts.length-1?"disabled":""}>▼</button>
+        <button type="button" class="btn danger remove-part" data-id="${p.id}">حذف</button>
+      </div>
+    </div>`).join("");
+  box.querySelectorAll(".part-title-input").forEach(inp=>inp.addEventListener("change",()=>{const p=pendingParts.find(x=>x.id===inp.dataset.id);if(p)p.title=inp.value.trim()||p.title}));
+  box.querySelectorAll(".remove-part").forEach(b=>b.onclick=()=>{pendingParts=pendingParts.filter(p=>p.id!==b.dataset.id);renderPartsBuilder()});
+  box.querySelectorAll(".move-part-up").forEach(b=>b.onclick=()=>movePart(b.dataset.id,-1));
+  box.querySelectorAll(".move-part-down").forEach(b=>b.onclick=()=>movePart(b.dataset.id,1));
+  box.querySelectorAll(".preview-part").forEach(b=>b.onclick=()=>previewPart(b.dataset.id));
+  markDirty();
+}
+function movePart(id,dir){const i=pendingParts.findIndex(p=>p.id===id);const j=i+dir;if(j<0||j>=pendingParts.length)return;[pendingParts[i],pendingParts[j]]=[pendingParts[j],pendingParts[i]];renderPartsBuilder()}
+function previewPart(id){
+  const p=pendingParts.find(x=>x.id===id);if(!p)return;
+  if(p.file)window.open(URL.createObjectURL(p.file),"_blank");
+  else if(p.path){const c=cfg();window.open(`https://${c.owner}.github.io/${c.repo}/${p.path}`,"_blank")}
+}
+
+/* ---- Steps ---- */
+function goToStep(n){
+  document.querySelectorAll(".step-tab").forEach(t=>t.classList.toggle("active",+t.dataset.step===n));
+  document.querySelectorAll(".step-panel").forEach(p=>p.classList.toggle("hidden",+p.dataset.step!==n));
+}
+document.querySelectorAll(".step-tab").forEach(t=>t.onclick=()=>goToStep(+t.dataset.step));
+
+/* ---- Dirty guard ---- */
+function markDirty(){dirty=true}
+["name","description","level","duration","tags","featured","category"].forEach(id=>$(id).addEventListener("input",markDirty));
+window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=""}});
+
+/* ---- Stats ---- */
+function renderStatsA(){$("statCoursesA").textContent=sites.length;$("statSectionsA").textContent=sections.length;$("statPartsA").textContent=sites.reduce((n,s)=>n+((s.parts||[]).length||(s.file?1:0)),0)}
+$("exportBtn").onclick=()=>{const blob=new Blob([sitesJsonContent()],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="sites-backup.json";a.click()};
+
+/* ---- List ---- */
+function filteredSites(){const q=($("listSearch").value||"").trim().toLowerCase();return sites.map((s,i)=>({s,i})).filter(({s})=>!q||[s.name,s.category,s.description].join(" ").toLowerCase().includes(q))}
+function renderList(){
+  const rows=filteredSites();
+  $("list").innerHTML=rows.length?rows.map(({s,i})=>`
+    <div class="site-row" data-i="${i}">
+      <div><strong>${esc(s.name)}</strong><div class="hint">${esc(s.category||"بدون قسم")} · ${(s.parts||[]).length||1} صفحة ${s.featured?"· ⭐ مميز":""}</div></div>
+      <div class="actions">
+        <button class="btn soft move-course-up" data-i="${i}">▲</button>
+        <button class="btn soft move-course-down" data-i="${i}">▼</button>
+        <button class="btn soft" onclick="editSite(${i})">تعديل</button>
+        <button class="btn danger" onclick="deleteSite(${i})">حذف</button>
+      </div>
+    </div>`).join(""):'<p class="hint">لا يوجد محتوى مطابق.</p>';
+  $("list").querySelectorAll(".move-course-up").forEach(b=>b.onclick=()=>moveCourse(+b.dataset.i,-1));
+  $("list").querySelectorAll(".move-course-down").forEach(b=>b.onclick=()=>moveCourse(+b.dataset.i,1));
+}
+$("listSearch").addEventListener("input",renderList);
+async function moveCourse(i,dir){
+  const j=i+dir;if(j<0||j>=sites.length)return;[sites[i],sites[j]]=[sites[j],sites[i]];renderList();
+  try{await commitChanges([{path:"sites.json",mode:"100644",type:"blob",content:sitesJsonContent()}],"Reorder courses");msg("تم إعادة الترتيب.")}
+  catch(e){msg("فشل الحفظ: "+e.message,true)}
+}
+
+/* ---- Edit / Cancel / Duplicate ---- */
+window.editSite=i=>{
+  const s=sites[i];editing=i;
+  $("formTitle").textContent="✏️ تعديل: "+s.name;
+  $("name").value=s.name||"";renderCategorySelect();$("category").value=s.category||"";
+  $("description").value=s.description||"";$("level").value=s.level||"";$("duration").value=s.duration||"";
+  $("tags").value=(s.tags||[]).join(", ");$("featured").checked=!!s.featured;$("image").value="";
+  pendingParts=(s.parts||[]).map(p=>({id:uid(),title:p.title||p.file,file:null,path:p.file}));
+  renderPartsBuilder();$("duplicateBtn").style.display="inline-block";goToStep(1);
+  $("formTitle").scrollIntoView({behavior:"smooth"});
+  $("cancel").classList.remove("hidden");$("submit").textContent="حفظ التعديل";
+  dirty=false;
+};
+$("cancel").onclick=()=>{
+  editing=-1;pendingParts=[];
+  $("formTitle").textContent="➕ إضافة محتوى";$("submit").textContent="رفع إلى GitHub";$("cancel").classList.add("hidden");
+  $("name").value=$("description").value=$("duration").value=$("tags").value="";
+  $("level").value="";renderCategorySelect();$("category").value="";$("featured").checked=false;$("image").value="";
+  $("duplicateBtn").style.display="none";renderPartsBuilder();goToStep(1);dirty=false;
+};
+$("duplicateBtn").onclick=()=>{
+  $("name").value=$("name").value+" (نسخة)";editing=-1;
+  $("formTitle").textContent="➕ إضافة محتوى (مستنسخ)";$("submit").textContent="رفع إلى GitHub";
+  $("cancel").classList.remove("hidden");$("duplicateBtn").style.display="none";dirty=true;
+};
+
+/* ---- Submit ---- */
+$("submit").onclick=async()=>{
+ try{
+  const c=cfg(),name=$("name").value.trim();
+  if(!token||!c.owner||!c.repo)throw Error("أكمل إعدادات GitHub.");
+  if(!name)throw Error("اكتب الاسم.");
+  if(editing<0&&!pendingParts.length)throw Error("أضف صفحة HTML واحدة على الأقل.");
+  msg("جاري تجهيز البيانات...");
+  let old=editing>=0?{...sites[editing]}:null;const id=old?.id||slug(name),folder=`courses/${id}`;
+  const entries=[],finalParts=[];
+  const shaMap={};
+  await runWithConcurrency(pendingParts.filter(p=>!p.file&&p.path),4,async item=>{const info=await get(item.path);shaMap[item.id]=info?.sha||null});
+  for(let i=0;i<pendingParts.length;i++){
+    const item=pendingParts[i],path=`${folder}/part-${String(i+1).padStart(2,"0")}.html`;
+    if(item.file){entries.push({path,mode:"100644",type:"blob",content:await item.file.text()})}
+    else if(item.path){const sha=shaMap[item.id];if(!sha)throw Error(`تعذر العثور على الملف الأصلي لـ "${item.title}".`);entries.push({path,mode:"100644",type:"blob",sha})}
+    finalParts.push({title:item.title||`جزء ${i+1}`,file:path});
+    msg(`جاري تجهيز الأجزاء... (${i+1} من ${pendingParts.length})`);
+  }
+  if(old?.parts)for(const p of old.parts){if(!finalParts.some(n=>n.file===p.file))entries.push({path:p.file,mode:"100644",type:"blob",sha:null})}
+  let imagePath=old?.image||"";const image=$("image").files[0];
+  if(image){
+    const ext=(image.name.match(/\.([a-z0-9]+)$/i)||[])[1]||"png",newPath=`courses/${id}/cover.${ext}`;
+    const blobSha=await createBlob(await f64(image));
+    entries.push({path:newPath,mode:"100644",type:"blob",sha:blobSha});
+    if(old?.image&&old.image!==newPath)entries.push({path:old.image,mode:"100644",type:"blob",sha:null});
+    imagePath=newPath;
+  }
+  const obj={id,name,description:$("description").value.trim(),category:$("category").value,level:$("level").value,duration:$("duration").value.trim(),tags:$("tags").value.split(",").map(x=>x.trim()).filter(Boolean),featured:$("featured").checked,image:imagePath,parts:finalParts};
+  const newSites=[...sites];if(editing>=0)newSites[editing]=obj;else newSites.push(obj);
+  entries.push({path:"sites.json",mode:"100644",type:"blob",content:JSON.stringify({sections,courses:newSites},null,2)+"\n"});
+  msg("جاري الحفظ في GitHub (commit واحد)...");
+  await commitChanges(entries,editing>=0?`Update ${name}`:`Add ${name}`);
+  sites=newSites;renderList();renderSections();renderStatsA();
+  msg(editing>=0?"تم تعديل المحتوى بنجاح.":"تمت إضافة المحتوى بنجاح.");
+  dirty=false;$("cancel").click();
+ }catch(e){msg("فشلت العملية: "+e.message,true);console.error(e)}
+};
+window.deleteSite=async i=>{
+  const s=sites[i];if(!confirm(`حذف ${s.name}؟ سيتم حذف كل صفحاته وصورته من GitHub.`))return;
+  try{
+    msg("جاري الحذف...");
+    const entries=[];for(const p of s.parts||[])entries.push({path:p.file,mode:"100644",type:"blob",sha:null});
+    if(s.image)entries.push({path:s.image,mode:"100644",type:"blob",sha:null});
+    const newSites=sites.filter((_,idx)=>idx!==i);
+    entries.push({path:"sites.json",mode:"100644",type:"blob",content:JSON.stringify({sections,courses:newSites},null,2)+"\n"});
+    await commitChanges(entries,`Delete ${s.name}`);
+    sites=newSites;renderList();renderSections();renderStatsA();msg("تم الحذف.");
+  }catch(e){msg("فشل الحذف: "+e.message,true)}
+};
+
+/* ---- Login / connection ---- */
+$("loginBtn").onclick=async()=>{
+  token=$("token").value.trim();if(!token)return alert("أدخل Token");
+  sessionStorage.setItem("libraryToken",token);$("login").classList.add("hidden");$("app").classList.remove("hidden");
+  try{await loadJson();renderSections();renderList();renderStatsA();msg("تم الاتصال.")}catch(e){msg("فشل الاتصال: "+e.message,true)}
+};
+$("saveSettings").onclick=async()=>{
+  try{
+    const c=cfg();if(!c.owner||!c.repo)throw Error("أدخل Owner وRepository");
+    const r=await fetch(`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}`,{headers:headers()});if(!r.ok)throw await apiError(r);
+    localStorage.setItem("libraryCfg",JSON.stringify(c));
+    await loadJson();renderSections();renderList();renderStatsA();msg("تم حفظ الإعدادات والاتصال بنجاح.");
+  }catch(e){msg("فشل الاتصال: "+e.message,true)}
+};
+$("logout").onclick=()=>{sessionStorage.removeItem("libraryToken");location.reload()};
+(function(){
+  const c=JSON.parse(localStorage.getItem("libraryCfg")||"{}");
+  $("owner").value=c.owner||"";$("repo").value=c.repo||"";$("branch").value=c.branch||"main";
+  if(token){$("login").classList.add("hidden");$("app").classList.remove("hidden");loadJson().then(()=>{renderSections();renderList();renderStatsA()}).catch(e=>msg("تعذر تحميل المحتوى: "+e.message,true))}
+})();
+</script></body></html>
