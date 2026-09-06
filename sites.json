@@ -28,6 +28,25 @@
           "file": "courses/ال40-مجموعة-كلمات-httd5/part-01.html"
         }
       ]
+    },
+    {
+      "id": "التعبيرات-و-الجمل-3sw9e",
+      "name": "التعبيرات و الجمل",
+      "description": "اشهر الجمل الانجليزية المستخدمه يوميا",
+      "category": "الانجليزيه كلمات",
+      "level": "",
+      "duration": "",
+      "tags": [
+        "انجليزي"
+      ],
+      "featured": false,
+      "image": "courses/التعبيرات-و-الجمل-3sw9e/cover.png",
+      "parts": [
+        {
+          "title": "234",
+          "file": "courses/التعبيرات-و-الجمل-3sw9e/part-01.html"
+        }
+      ]
     }
   ]
 }
