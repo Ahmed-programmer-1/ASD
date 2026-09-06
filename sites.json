@@ -9,5 +9,25 @@
       "name": "قواعد الانجليزية حره"
     }
   ],
-  "courses": []
+  "courses": [
+    {
+      "id": "ال40-مجموعة-كلمات-httd5",
+      "name": "ال40 مجموعة كلمات",
+      "description": "اهم كلمات اللغة الانجليزية في 40 قسم كلمات تجعلك هذه في مستوي A2",
+      "category": "الانجليزيه كلمات",
+      "level": "",
+      "duration": "",
+      "tags": [
+        "انجليزي"
+      ],
+      "featured": false,
+      "image": "courses/ال40-مجموعة-كلمات-httd5/cover.png",
+      "parts": [
+        {
+          "title": "40",
+          "file": "courses/ال40-مجموعة-كلمات-httd5/part-01.html"
+        }
+      ]
+    }
+  ]
 }
