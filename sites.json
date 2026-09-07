@@ -92,12 +92,12 @@
       "name": "اساسيات اللغة - اهم الكلمات",
       "description": "اهم 485 كلمة في الانجليزيه - مهمة في كل المراحل الدراسية",
       "category": "الانجليزيه كلمات حره",
-      "level": "",
+      "level": "مبتدئ",
       "duration": "",
       "tags": [
         "انجليزي"
       ],
-      "featured": false,
+      "featured": true,
       "image": "courses/اساسيات-اللغة-اهم-الكلمات-cviip/cover.png",
       "parts": [
         {
